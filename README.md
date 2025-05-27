@@ -1,334 +1,386 @@
-#program 1
+1.
+
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Load your dataset
+df = pd.read_csv("F:/2. vs code/Datasets/housing.csv")
+
+# Select only numeric columns
+num_features = df.select_dtypes(include=[np.number]).columns
+
+# Plot histograms
+for col in num_features:
+    sns.histplot(df[col], kde=True)
+    plt.title(f'Histogram of {col}')
+    plt.show()
+
+# Plot boxplots
+for col in num_features:
+    sns.boxplot(x=df[col], color='orange')
+    plt.title(f'Boxplot of {col}')
+    plt.show()
+
+# Detect outliers using IQR
+print("Outlier Summary:")
+for col in num_features:
+    Q1 = df[col].quantile(0.25)
+    Q3 = df[col].quantile(0.75)
+    IQR = Q3 - Q1
+    lower = Q1 - 1.5 * IQR
+    upper = Q3 + 1.5 * IQR
+    outliers = df[(df[col] < lower) | (df[col] > upper)]
+    print(f"{col}: {len(outliers)} outliers")
+
+# Summary of dataset
+print("\nDataset Summary:")
+print(df.describe())
 
-df1 <- data.frame(ID=1:5, Name=c("a","b","c","d","e"))
-df2 <- data.frame(ID=3:7, Age=c(12,23,34,45,67))
 
-merged_df <- merge(df1,df2,by="ID", all=TRUE)
-print(merged_df)
+2.
 
-library(tidyr)
-long <- gather(merged_df,"Variable","Value", -ID)
-print(long)
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Step 1: Load your dataset (update the path to your CSV file)
+df = pd.read_csv("F:/2. vs code/Datasets/housing.csv")
+
+# Step 2: Select only numeric columns
+numeric_df = df.select_dtypes(include='number')
 
-wide <- spread(long,"Variable", "Value")
-print(wide)
+# Step 3: Calculate correlation matrix
+corr_matrix = numeric_df.corr()
 
-#program 2
-
-strings <- c("Data_transformation", "computational_statisticts")
-library(stringr)
-strings <- str_replace_all(strings,"_"," ")
-print(strings)
-
-emails <- c("user1@gmail.com", "user2@example.com")
-valid_emails <- grep("@gmail.com",emails,value=TRUE)
-print(valid_emails)
-
-#program 3
-
-library(dplyr)
-library(forecast)
-set.seed(123)
-data <- data.frame(
-  Date=seq(as.Date("2020-01-01"),by="month", length.out=36),
-  value1=rnorm(36,mean=200,sd=20),
-  value2=rnorm(36,mean=100,sd=10)
-)
-
-data_ts <- ts(data[,-1],start = c(2020,1), frequency = 36)
-
-grouped_data <- data %>%
-  mutate(Year=format(Date, "%Y")) %>%
-  group_by(Year)%>%
-  summarise(across(value1:value2,mean))
-
-print(data)
-print(grouped_data)
-
-fit1 <- auto.arima(data_ts[,1])
-fit2 <- auto.arima(data_ts[,2])
-forecast1 <- forecast(fit1,h=6)
-forecast2 <- forecast(fit2,h=6)
-
-par(mfrow=c(2,1))
-plot(forecast1)
-plot(forecast2)
-
-print(forecast1)
-print(forecast2)
-
-checkresiduals(fit1)
-
-
-# program 4
-
-data <- c(10, 10, 30, 40, 10, 60, 70, 80, 90, 100)
-
-
-results <- list(
-  mean = mean(data),
-  median = median(data),
-  mode = as.numeric(names(sort(table(data), decreasing = TRUE)[1])), 
-  sd = sd(data),
-  variance = var(data),
-  MAD = mad(data), 
-  quartile_dev = IQR(data) / 2 
-)
-
-print(results)
-
-#program 5
-
-library(caret)
-library(Metrics)
-
-data(mtcars)
-
-trainIndex <- createDataPartition(mtcars$mpg, p=0.8, list=FALSE)
-trainData <- mtcars[trainIndex,]
-validData <- mtcars[-trainIndex,]
-
-calc_metrics <- function(actual,predicted){
-  c(
-    RMSE <- rmse(actual,predicted),
-    MAE <- mae(actual,predicted),
-    R2 <- cor(actual,predicted)^2
-  )
-}
-
-model_val <- lm(mpg ~ ., data=trainData)
-metrics_val <- calc_metrics(validData$mpg, predict(model_val, newdata = validData))
-print(metrics_val)
-
-metrics_loocv <- sapply(1:nrow(mtcars), function(i){
-  model_loocv <- lm(mpg ~ ., data=mtcars[-i,])
-  pred_loocv <- predict(model_loocv, newdata=mtcars[i, , drop=FALSE])
-  calc_metrics(mtcars$mpg[i],pred_loocv)
-})
-print(colMeans(metrics_loocv))
-
-cv_results <- train(mpg ~ ., data=mtcars, method="lm",
-                    trControl=trainControl(method="cv", number = 5, summaryFunction = defaultSummary))
-print(cv_results$results)
-
-#program 6
-
-library(ggplot2) 
-library(dplyr) 
-
-set.seed(123) 
-
-response_data <- data.frame( 
-  response = c("Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree"), 
-  frequency = c(5, 15, 25, 30, 25) 
-) 
-
-print("Frequency Distribution:") 
-print(response_data) 
-
-response_data <- response_data %>% 
-  mutate(proportion = frequency / sum(frequency)) 
-
-mu <- mean(1:length(response_data$response)) 
-sigma <- sd(1:length(response_data$response)) 
-n <- sum(response_data$frequency)  
-p <- mean(response_data$proportion) 
-lambda <- n * p 
-p_bernoulli <- response_data$proportion[1]  
-
-x <- 0:(max(response_data$frequency) + 10) 
-
-normal_df <- data.frame(x = x, density = dnorm(x, mean = mu, sd = sigma)) 
-binomial_df <- data.frame(x = x, density = dbinom(x, size = n, prob = p)) 
-poisson_df <- data.frame(x = x, density = dpois(x, lambda = lambda)) 
-bernoulli_df <- data.frame(x = c(0, 1), density = c(1 - p_bernoulli, p_bernoulli)) 
-
-ggplot() + 
-  geom_line(data = normal_df, aes(x = x, y = density), color = "blue") + 
-  geom_line(data = binomial_df, aes(x = x, y = density), color = "red") + 
-  geom_line(data = poisson_df, aes(x = x, y = density), color = "green") + 
-  geom_bar(data = bernoulli_df, aes(x = factor(x), y = density), stat = "identity", fill = "purple", alpha = 0.5) + 
-  labs(title = "Probability Distributions", 
-       x = "Response Categories / Counts", 
-       y = "Density / Probability") + 
-  scale_x_discrete(labels = c("Failure", "Success")) + 
-  theme_minimal() + 
-  theme(legend.position = "top") + 
-  scale_color_manual(values = c("blue", "red", "green")) 
-
-cat("Summary Statistics for the Frequency Distribution:\n") 
-cat("Mean of Frequencies: ", mean(response_data$frequency), "\n") 
-cat("Standard Deviation of Frequencies: ", sd(response_data$frequency), "\n") 
-cat("Total Responses: ", sum(response_data$frequency), "\n") 
-cat("Probability of 'Strongly Disagree': ", p_bernoulli, "\n") 
-cat("Mean for Normal Distribution (mu): ", mu, "\n") 
-cat("Standard Deviation for Normal Distribution (sigma): ", sigma, "\n") 
-cat("Lambda for Poisson Distribution: ", lambda, "\n") 
-
-
-#program 7
-
-set.seed(123)
-
-one_sample_data <- rnorm(30, mean=50, sd=10)
-
-two_sample_data1 <- rnorm(30, mean=55, sd=10)
-two_sample_data2 <- rnorm(30, mean=50, sd=10)
-
-paired_sample_before <- rnorm(30, mean=50, sd=10)
-paired_sample_after <- paired_sample_before+rnorm(30, mean=-2, sd=5)
-
-one_sample_test <- t.test(one_sample_data,mu=50)
-print(one_sample_test)
-
-two_sample_test <- t.test(two_sample_data1, two_sample_data2)
-print(two_sample_test)
-
-paired_sample_test <- t.test(paired_sample_before, paired_sample_after, paired=TRUE)
-print(paired_sample_test)
-
-#program 8
-
-library(dplyr)
-set.seed(123)
-
-treatment_A <- c(11,22,33,44,55)
-treatment_B <- c(22,33,44,55,66)
-treatment_C <- c(33,44,55,66,77)
-one_way <- data.frame(
-  value=c(treatment_A, treatment_B, treatment_C),
-  treatment = factor(rep(c("A","B","C"),each=5))
-)
-
-one_way_anova <- aov(value~treatment,data=one_way)
-print(summary(one_way_anova))
-
-treatment_A_male <- c(11,22,33,44,55)
-treatment_A_female <- c(22,33,44,55,66)
-treatment_B_male <- c(11,22,33,44,55)
-treatment_B_female <- c(22,33,44,55,66)
-
-two_way <- data.frame(
-  value = c(treatment_A_male, 
-             treatment_A_female,
-             treatment_B_male,
-             treatment_B_female),
-  treatment = factor(rep(c("A","B"),each=10)),
-  gender = factor(rep(c("male","female"),times=10))
-)
-
-two_way_anova <- aov(value ~ treatment * gender, data=two_way)
-print(summary(two_way_anova))
-
-#program 9
-
-library(dplyr)
-library(reshape2)
-library(corrplot)
-library(ggplot2)
-
-data(mtcars)
-
-correlation_matrix <- cor(mtcars)
-print(correlation_matrix)
-
-rank_correlation_matrix <- cor(mtcars, method="spearman")
-print(rank_correlation_matrix)
-
-model <- lm(mpg ~ hp+wt, data=mtcars)
-print(summary(model))
-
-mtcars <- mtcars %>%
-  mutate(predicted_mpg=predict(model),
-         residuals=residuals(model))
-
-ggplot(mtcars, aes(x=predicted_mpg, y=mpg))+
-  geom_point(color='blue')+
-  geom_smooth(method = 'lm', color='red')+
-  labs(title='actual vs predicted mpg', x='predicted', y='actual')+
-  theme_minimal()
-
-cor_melted <- melt(correlation_matrix)
-ggplot(cor_melted,aes(Var1,Var2,fill=value))+
-  geom_tile()+
-  scale_fill_gradient2(low='blue', high='red', mid='white', limit=c(-1,1))+
-  labs(title = "heatmap")+
-  theme_minimal()
-
-corrplot(correlation_matrix, method="circle", type='upper')
-
-
-#program 10
-
-library(mlbench)
-library(ggplot2)
-library(dplyr)
-library(factoextra)
-
-data("BreastCancer", package = "mlbench")
-bc_data <- na.omit(BreastCancer %>% select(-Id))
-bc_data$Class <- as.factor(bc_data$Class)
-
-scaled_data <- scale(bc_data %>% select(-Class) %>% mutate(across(everything(), as.numeric)))
-pca_result <- prcomp(scaled_data, center = TRUE, scale. = TRUE)
-
-fviz_screeplot(pca_result, addlabels = TRUE, ylim = c(0, 50))
-fviz_pca_biplot(pca_result, geom.ind = "point", pointshape = 21, pointsize = 2, 
-                fill.ind = bc_data$Class, palette = c("#00AFBB", "#FC4E07"), 
-                addEllipses = TRUE, legend.title = "Class")
-summary(pca_result)
-
-
-#program 11
-
-library(ggplot2)
-library(MASS)
-
-data(iris)
-lda_model <- lda(Species ~ Sepal.Length+Sepal.Width+Petal.Length+Petal.Width, data=iris)
-print(lda_model)
-
-lda_predictions <- predict(lda_model,iris)
-
-iris$lda_pred <- lda_predictions$class
-
-lda_df <- data.frame(LDA1=lda_predictions$x[,1], LDA2=lda_predictions$x[,2], Species=iris$Species)
-
-ggplot(lda_df,aes(x=LDA1, y=LDA2, color=Species))+
-  geom_point(size=3)+
-  labs(title="linear discriminant analysis", x="LDA1", y="LDA2")+
-  theme_minimal()
-
-
-#program 12
-
-library(ggplot2)
-library(caret)
-
-data(iris)
-head(iris)
-
-model <- lm(Sepal.Length ~ Sepal.Width+Petal.Length+Petal.Width, data=iris)
-summary(model)
-
-par(mfrow=c(2,2))
-plot(model)
-
-predicted_values <- predict(model,newdata = iris)
-ggplot(iris,aes(x=Sepal.Length,y=predicted_values,color=Species))+
-  geom_point(size=3)+
-  geom_abline(intercept = 0, slope=1, linetype="dashed", color="red")+
-  labs(x="actual sepal length", y="predicted sepal length")+
-  theme_minimal()
-
-ggplot(data.frame(fitted=fitted(model),
-                  residuals=residuals(model)),
-       aes(x=fitted, y= residuals))+
-  geom_point(size=3)+
-  geom_hline(yintercept = 0,color="red")+
-  labs(x="fitted",y="residuals")+
-  theme_minimal()
-
-cat(" root mean square error (RMSE) :", sqrt(mean(residuals(model)^2)) )
-
-vif(model)
+# Step 4: Show heatmap
+plt.figure(figsize=(10, 8))
+sns.heatmap(corr_matrix, annot=True, cmap='coolwarm')
+plt.title("Correlation Heatmap")
+plt.show()
+
+# Step 5: Show pair plot
+sns.pairplot(numeric_df)
+plt.suptitle("Pair Plot of Numeric Features",y=1.02)
+plt.show()
+
+3.
+
+from sklearn.datasets import load_iris
+from sklearn.decomposition import PCA
+import matplotlib.pyplot as plt
+
+# Load data
+iris = load_iris()
+data = iris.data
+labels = iris.target
+
+# Apply PCA
+pca = PCA(n_components=2)
+reduced = pca.fit_transform(data)
+
+# Plot
+for i in range(3):
+    plt.scatter(reduced[labels == i, 0], reduced[labels == i, 1], label=iris.target_names[i])
+plt.legend()
+plt.title("PCA - Iris Dataset")
+plt.xlabel("PC1")
+plt.ylabel("PC2")
+plt.grid(True)
+plt.show()
+
+4.
+
+import pandas as pd
+
+def find_s(file_path):
+    # Load CSV file
+    data = pd.read_csv("F:/2. vs code/Datasets/four.csv")
+
+    # Rename label column if it's "enjoy sport"
+    if "enjoy sport" in data.columns:
+        data.rename(columns={"enjoy sport": "label"}, inplace=True)
+
+    # Keep only rows with "Yes" label
+    positive_data = data[data["label"].str.strip().str.lower() == "yes"]
+    
+    # Initialize hypothesis with the first positive example
+    hypothesis = list(positive_data.iloc[0, :-1])
+
+    # Generalize hypothesis with other positive examples
+    for i in range(1, len(positive_data)):
+        row = positive_data.iloc[i, :-1]
+        for j in range(len(hypothesis)):
+            if hypothesis[j] != row[j]:
+                hypothesis[j] = "?"
+
+    return hypothesis
+
+file_path = "F:/2. vs code/Datasets/four.csv"
+
+# Run the algorithm
+final_hypothesis = find_s(file_path)
+
+# Show the result
+print("Final Hypothesis:", final_hypothesis)
+
+5.
+
+import numpy as np
+from collections import Counter
+import matplotlib.pyplot as plt
+
+np.random.seed(0)
+data = np.random.rand(100)
+
+# Label first 50 points
+labels = ["Class1" if x <= 0.5 else "Class2" for x in data[:50]]
+
+def distance(a, b):
+    return abs(a - b)
+
+def knn(train_x, train_y, test_point, k):
+    dists = sorted((distance(test_point, x), y) for x, y in zip(train_x, train_y))
+    k_nearest = [label for _, label in dists[:k]]
+    return Counter(k_nearest).most_common(1)[0][0]
+
+train_x, train_y = data[:50], labels
+test_x = data[50:]
+k_values = [1, 2, 3, 4, 5, 20, 30]
+
+for k in k_values:
+    print(f"\n--- Results for k = {k} ---")
+    predictions = [knn(train_x, train_y, x, k) for x in test_x]
+
+    for i, (x_val, pred) in enumerate(zip(test_x, predictions), start=51):
+        print(f"x{i} = {x_val:.3f} → {pred}")
+
+    # Visualization
+    class1 = [x for x, label in zip(test_x, predictions) if label == "Class1"]
+    class2 = [x for x, label in zip(test_x, predictions) if label == "Class2"]
+
+    plt.figure(figsize=(8, 3))
+    plt.scatter(train_x, [0]*50, c=["blue" if l == "Class1" else "red" for l in train_y], label="Train")
+    plt.scatter(class1, [1]*len(class1), c="blue", marker="x", label="Class1 Test")
+    plt.scatter(class2, [1]*len(class2), c="red", marker="x", label="Class2 Test")
+    plt.yticks([0, 1], ["Train", "Test"])
+    plt.title(f"k = {k}")
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
+
+6.
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+# 1. Create sample data (X values and noisy sin values as y)
+X = np.linspace(0, 10, 100)
+y = np.sin(X) + np.random.normal(0, 0.1, 100)
+
+# 2. Function to calculate prediction for one test point
+def predict(x0, X, y, tau):
+    # Compute weights (how close x0 is to each X point)
+    weights = np.exp(- (X - x0) ** 2 / (2 * tau ** 2))
+    
+    # Add a bias term (constant 1) to X for linear model
+    X_b = np.c_[np.ones_like(X), X]
+    x0_b = np.array([1, x0])  # bias + x0
+
+    # Create diagonal weight matrix
+    W = np.diag(weights)
+    
+    # Compute theta using weighted linear regression formula
+    theta = np.linalg.pinv(X_b.T @ W @ X_b) @ (X_b.T @ W @ y)
+    
+    return x0_b @ theta  # prediction for x0
+
+# 3. Plot results
+def draw(tau):
+    x_line = np.linspace(0, 10, 200)
+    y_line = [predict(x0, X, y, tau) for x0 in x_line]
+
+    plt.scatter(X, y, color='blue', label='Data')
+    plt.plot(x_line, y_line, color='red', label=f'LWLR (tau={tau})')
+    plt.title("Locally Weighted Regression")
+    plt.xlabel("X")
+    plt.ylabel("Y")
+    plt.grid(True)
+    plt.legend()
+    plt.show()
+
+# 4. Run the plot with tau = 0.5
+draw(tau=0.5)
+
+7.
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+# 1. Create sample data (X values and noisy sin values as y)
+X = np.linspace(0, 10, 100)
+y = np.sin(X) + np.random.normal(0, 0.1, 100)
+
+# 2. Function to calculate prediction for one test point
+def predict(x0, X, y, tau):
+    # Compute weights (how close x0 is to each X point)
+    weights = np.exp(- (X - x0) ** 2 / (2 * tau ** 2))
+    
+    # Add a bias term (constant 1) to X for linear model
+    X_b = np.c_[np.ones_like(X), X]
+    x0_b = np.array([1, x0])  # bias + x0
+
+    # Create diagonal weight matrix
+    W = np.diag(weights)
+    
+    # Compute theta using weighted linear regression formula
+    theta = np.linalg.pinv(X_b.T @ W @ X_b) @ (X_b.T @ W @ y)
+    
+    return x0_b @ theta  # prediction for x0
+
+# 3. Plot results
+def draw(tau):
+    x_line = np.linspace(0, 10, 200)
+    y_line = [predict(x0, X, y, tau) for x0 in x_line]
+
+    plt.scatter(X, y, color='blue', label='Data')
+    plt.plot(x_line, y_line, color='red', label=f'LWLR (tau={tau})')
+    plt.title("Locally Weighted Regression")
+    plt.xlabel("X")
+    plt.ylabel("Y")
+    plt.grid(True)
+    plt.legend()
+    plt.show()
+
+# 4. Run the plot with tau = 0.5
+draw(tau=0.5)
+
+8.
+
+import numpy as np
+from sklearn.datasets import load_breast_cancer
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier, export_text
+
+# Load the breast cancer dataset (already included with sklearn, no internet needed)
+data = load_breast_cancer()
+X = data.data
+y = data.target
+
+# Split the dataset into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Create and train the decision tree classifier
+model = DecisionTreeClassifier(max_depth=4, random_state=42)
+model.fit(X_train, y_train)
+
+# Check model accuracy on test data
+accuracy = model.score(X_test, y_test)
+print(f"Model Accuracy: {accuracy:.2f}")
+
+# Print the decision tree rules
+rules = export_text(model, feature_names=list(data.feature_names))
+print("\nDecision Tree Rules:\n", rules)
+
+# Classify a new sample from the test set
+new_sample = X_test[0].reshape(1, -1)
+prediction = model.predict(new_sample)
+
+print("\nPredicted Class for the New Sample:", "Malignant" if prediction[0] == 0 else "Benign")
+
+
+9.
+
+import matplotlib.pyplot as plt
+from sklearn.datasets import fetch_olivetti_faces
+from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.naive_bayes import GaussianNB
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+
+# Load dataset
+data = fetch_olivetti_faces(shuffle=True, random_state=42)
+X, y = data.data, data.target
+
+# Split dataset
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+# Train model
+model = GaussianNB()
+model.fit(X_train, y_train)
+
+# Predict test labels
+y_pred = model.predict(X_test)
+
+# Print accuracy
+print(f"Accuracy: {accuracy_score(y_test, y_pred) * 100:.2f}%")
+
+# Print classification report and confusion matrix
+print("\nClassification Report:")
+print(classification_report(y_test, y_pred, zero_division=1))
+
+print("\nConfusion Matrix:")
+print(confusion_matrix(y_test, y_pred))
+
+# Cross-validation accuracy
+cv_scores = cross_val_score(model, X, y, cv=5)
+print(f"\nCross-validation Accuracy: {cv_scores.mean() * 100:.2f}%")
+
+# Visualize some predictions
+fig, axes = plt.subplots(3, 5, figsize=(12, 8))
+for ax, img, true_lbl, pred_lbl in zip(axes.ravel(), X_test, y_test, y_pred):
+    ax.imshow(img.reshape(64, 64), cmap='gray')
+    ax.set_title(f"True: {true_lbl}\nPred: {pred_lbl}")
+    ax.axis('off')
+
+plt.tight_layout()
+plt.show()
+
+
+10.
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.datasets import load_breast_cancer
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+from sklearn.metrics import confusion_matrix, classification_report
+
+# Load and scale data
+data = load_breast_cancer()
+X_scaled = StandardScaler().fit_transform(data.data)
+y = data.target
+
+# K-Means clustering
+kmeans = KMeans(n_clusters=2, random_state=42, n_init=10)
+clusters = kmeans.fit_predict(X_scaled)
+
+# Print evaluation metrics
+print("Confusion Matrix:\n", confusion_matrix(y, clusters))
+print("\nClassification Report:\n", classification_report(y, clusters))
+
+# PCA to reduce data to 2D for plotting
+X_pca = PCA(n_components=2).fit_transform(X_scaled)
+
+# Plot clusters
+plt.figure(figsize=(8, 6))
+sns.scatterplot(x=X_pca[:, 0], y=X_pca[:, 1], hue=clusters, palette='Set1', s=100, edgecolor='k', alpha=0.7)
+plt.title("K-Means Clusters")
+plt.show()
+
+# Plot true labels
+plt.figure(figsize=(8, 6))
+sns.scatterplot(x=X_pca[:, 0], y=X_pca[:, 1], hue=y, palette='coolwarm', s=100, edgecolor='k', alpha=0.7)
+plt.title("True Labels")
+plt.show()
+
+# Plot clusters with centroids
+plt.figure(figsize=(8, 6))
+sns.scatterplot(x=X_pca[:, 0], y=X_pca[:, 1], hue=clusters, palette='Set1', s=100, edgecolor='k', alpha=0.7)
+centers = PCA(n_components=2).fit_transform(kmeans.cluster_centers_)
+plt.scatter(centers[:, 0], centers[:, 1], c='red', s=200, marker='X', label='Centroids')
+plt.title("Clusters with Centroids")
+plt.legend()
+plt.show()
