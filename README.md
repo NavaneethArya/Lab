@@ -128,48 +128,33 @@ print("Final Hypothesis:", final_hypothesis)
 5.
 
 import numpy as np
-from collections import Counter
-import matplotlib.pyplot as plt
+from sklearn.neighbors import KNeighborsClassifier
 
+# Set seed and generate data
 np.random.seed(0)
 data = np.random.rand(100)
 
-# Label first 50 points
-labels = ["Class1" if x <= 0.5 else "Class2" for x in data[:50]]
+# Prepare training and test sets
+train_x = data[:50].reshape(-1, 1)
+train_y = ["Class1" if x <= 0.5 else "Class2" for x in data[:50]]
+test_x = data[50:].reshape(-1, 1)
 
-def distance(a, b):
-    return abs(a - b)
-
-def knn(train_x, train_y, test_point, k):
-    dists = sorted((distance(test_point, x), y) for x, y in zip(train_x, train_y))
-    k_nearest = [label for _, label in dists[:k]]
-    return Counter(k_nearest).most_common(1)[0][0]
-
-train_x, train_y = data[:50], labels
-test_x = data[50:]
+# Try different k values
 k_values = [1, 2, 3, 4, 5, 20, 30]
 
 for k in k_values:
     print(f"\n--- Results for k = {k} ---")
-    predictions = [knn(train_x, train_y, x, k) for x in test_x]
-
-    for i, (x_val, pred) in enumerate(zip(test_x, predictions), start=51):
+    
+    # Initialize and train the KNN classifier
+    model = KNeighborsClassifier(n_neighbors=k)
+    model.fit(train_x, train_y)
+    
+    # Predict on test data
+    predictions = model.predict(test_x)
+    
+    for i, (x_val, pred) in enumerate(zip(test_x.ravel(), predictions), start=51):
         print(f"x{i} = {x_val:.3f} → {pred}")
 
-    # Visualization
-    class1 = [x for x, label in zip(test_x, predictions) if label == "Class1"]
-    class2 = [x for x, label in zip(test_x, predictions) if label == "Class2"]
-
-    plt.figure(figsize=(8, 3))
-    plt.scatter(train_x, [0]*50, c=["blue" if l == "Class1" else "red" for l in train_y], label="Train")
-    plt.scatter(class1, [1]*len(class1), c="blue", marker="x", label="Class1 Test")
-    plt.scatter(class2, [1]*len(class2), c="red", marker="x", label="Class2 Test")
-    plt.yticks([0, 1], ["Train", "Test"])
-    plt.title(f"k = {k}")
-    plt.legend()
-    plt.grid(True)
-    plt.tight_layout()
-    plt.show()
 
 6.
 
