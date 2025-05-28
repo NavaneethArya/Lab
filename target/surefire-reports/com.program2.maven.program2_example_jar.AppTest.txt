@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.program2.maven.program2_example_jar.AppTest
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.014 s -- in com.program2.maven.program2_example_jar.AppTest

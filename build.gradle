@@ -1,0 +1,46 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id 'application'
+}
+
+application{
+mainClass = 'com.program2.maven.test.App'
+}
+
+repositories {
+    mavenLocal()
+    maven {
+        url = uri('https://repo.maven.apache.org/maven2/')
+    }
+}
+
+dependencies {
+    testImplementation libs.junit.junit
+}
+
+group = 'com.program2.maven'
+version = '0.0.1-SNAPSHOT'
+description = 'program2-example-jar'
+java.sourceCompatibility = JavaVersion.VERSION_1_8
+
+application {
+    // 👇 Make sure this matches your actual Java class with main()
+    mainClassName = 'com.program2.maven.App'
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from(components.java)
+        }
+    }
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+tasks.withType(Javadoc) {
+    options.encoding = 'UTF-8'
+}
