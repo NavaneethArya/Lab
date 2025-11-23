@@ -1,391 +1,384 @@
-1.
-
-import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
-import numpy as np
-
-# Load your dataset
-df = pd.read_csv("F:/2. vs code/Datasets/housing.csv")
-
-# Select only numeric columns
-num_features = df.select_dtypes(include=[np.number]).columns
-
-# Plot histograms
-for col in num_features:
-    sns.histplot(df[col], kde=True)
-    plt.title(f'Histogram of {col}')
-    plt.show()
-
-# Plot boxplots
-for col in num_features:
-    sns.boxplot(x=df[col], color='orange')
-    plt.title(f'Boxplot of {col}')
-    plt.show()
-
-# Detect outliers using IQR
-print("Outlier Summary:")
-for col in num_features:
-    Q1 = df[col].quantile(0.25)
-    Q3 = df[col].quantile(0.75)
-    IQR = Q3 - Q1
-    lower = Q1 - 1.5 * IQR
-    upper = Q3 + 1.5 * IQR
-    outliers = df[(df[col] < lower) | (df[col] > upper)]
-    print(f"{col}: {len(outliers)} outliers")
-
-# Summary of dataset
-print("\nDataset Summary:")
-print(df.describe())
-
-
-2.
-
-import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
-
-# Step 1: Load your dataset (update the path to your CSV file)
-df = pd.read_csv("F:/2. vs code/Datasets/housing.csv")
-
-# Step 2: Select only numeric columns
-numeric_df = df.select_dtypes(include='number')
-
-# Step 3: Calculate correlation matrix
-corr_matrix = numeric_df.corr()
-
-# Step 4: Show heatmap
-plt.figure(figsize=(10, 8))
-sns.heatmap(corr_matrix, annot=True, cmap='coolwarm')
-plt.title("Correlation Heatmap")
-plt.show()
-
-# Step 5: Show pair plot
-sns.pairplot(numeric_df)
-plt.suptitle("Pair Plot of Numeric Features",y=1.02)
-plt.show()
-
-3.
-
-from sklearn.datasets import load_iris
-from sklearn.decomposition import PCA
-import matplotlib.pyplot as plt
-
-# Load data
-iris = load_iris()
-data = iris.data
-labels = iris.target
-
-# Apply PCA
-pca = PCA(n_components=2)
-reduced = pca.fit_transform(data)
-
-# Plot
-for i in range(3):
-    plt.scatter(reduced[labels == i, 0], reduced[labels == i, 1], label=iris.target_names[i])
-plt.legend()
-plt.title("PCA - Iris Dataset")
-plt.xlabel("PC1")
-plt.ylabel("PC2")
-plt.grid(True)
-plt.show()
-
-4.
-
-import pandas as pd
-
-def find_s(file_path):
-    # Load CSV file
-    data = pd.read_csv("F:/2. vs code/Datasets/four.csv")
-
-    # Rename label column if it's "enjoy sport"
-    if "enjoy sport" in data.columns:
-        data.rename(columns={"enjoy sport": "label"}, inplace=True)
-
-    # Keep only rows with "Yes" label
-    positive_data = data[data["label"].str.strip().str.lower() == "yes"]
-    
-    # Initialize hypothesis with the first positive example
-    hypothesis = list(positive_data.iloc[0, :-1])
-
-    # Generalize hypothesis with other positive examples
-    for i in range(1, len(positive_data)):
-        row = positive_data.iloc[i, :-1]
-        for j in range(len(hypothesis)):
-            if hypothesis[j] != row[j]:
-                hypothesis[j] = "?"
-
-    return hypothesis
-
-file_path = "F:/2. vs code/Datasets/four.csv"
-
-# Run the algorithm
-final_hypothesis = find_s(file_path)
-
-# Show the result
-print("Final Hypothesis:", final_hypothesis)
-
-5.
-
-import numpy as np
-from sklearn.neighbors import KNeighborsClassifier
-
-# Set seed and generate data
-np.random.seed(0)
-data = np.random.rand(100)
-
-# Prepare training and test sets
-train_x = data[:50].reshape(-1, 1)
-train_y = ["Class1" if x <= 0.5 else "Class2" for x in data[:50]]
-test_x = data[50:].reshape(-1, 1)
-
-# Try different k values
-k_values = [1, 2, 3, 4, 5, 20, 30]
-
-for k in k_values:
-    print(f"\n--- Results for k = {k} ---")
-    
-    # Initialize and train the KNN classifier
-    model = KNeighborsClassifier(n_neighbors=k)
-    model.fit(train_x, train_y)
-    
-    # Predict on test data
-    predictions = model.predict(test_x)
-    
-    for i, (x_val, pred) in enumerate(zip(test_x.ravel(), predictions), start=51):
-        print(f"x{i} = {x_val:.3f} → {pred}")
-
-
-6.
-
-import numpy as np
-import matplotlib.pyplot as plt
-
-# 1. Create sample data (X values and noisy sin values as y)
-X = np.linspace(0, 10, 100)
-y = np.sin(X) + np.random.normal(0, 0.1, 100)
-
-# 2. Function to calculate prediction for one test point
-def predict(x0, X, y, tau):
-    # Compute weights (how close x0 is to each X point)
-    weights = np.exp(- (X - x0) ** 2 / (2 * tau ** 2))
-    
-    # Add a bias term (constant 1) to X for linear model
-    X_b = np.c_[np.ones_like(X), X]
-    x0_b = np.array([1, x0])  # bias + x0
-
-    # Create diagonal weight matrix
-    W = np.diag(weights)
-    
-    # Compute theta using weighted linear regression formula
-    theta = np.linalg.pinv(X_b.T @ W @ X_b) @ (X_b.T @ W @ y)
-    
-    return x0_b @ theta  # prediction for x0
-
-# 3. Plot results
-def draw(tau):
-    x_line = np.linspace(0, 10, 200)
-    y_line = [predict(x0, X, y, tau) for x0 in x_line]
-
-    plt.scatter(X, y, color='blue', label='Data')
-    plt.plot(x_line, y_line, color='red', label=f'LWLR (tau={tau})')
-    plt.title("Locally Weighted Regression")
-    plt.xlabel("X")
-    plt.ylabel("Y")
-    plt.grid(True)
-    plt.legend()
-    plt.show()
-
-# 4. Run the plot with tau = 0.5
-draw(tau=0.5)
-
-7.
-
-import pandas as pd
-import matplotlib.pyplot as plt
-from sklearn.linear_model import LinearRegression
-from sklearn.preprocessing import PolynomialFeatures
-from sklearn.model_selection import train_test_split
-from sklearn.datasets import fetch_california_housing
-
-# ----- Linear Regression: California Housing -----
-def linear_regression():
-    data = fetch_california_housing(as_frame=True)
-    X = data.data[["AveRooms"]]
-    y = data.target
-
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
-
-    model = LinearRegression()
-    model.fit(X_train, y_train)
-    y_pred = model.predict(X_test)
-
-    plt.scatter(X_test, y_test, color='blue', label='Actual', alpha=0.5)
-    plt.scatter(X_test, y_pred, color='red', label='Predicted', alpha=0.5)
-    plt.title("Linear Regression - California Housing")
-    plt.xlabel("Average Rooms")
-    plt.ylabel("House Price")
-    plt.legend()
-    plt.grid(True)
-    plt.show()
-
-# ----- Polynomial Regression: Auto MPG -----
-def polynomial_regression():
-    url = "https://archive.ics.uci.edu/ml/machine-learning-databases/auto-mpg/auto-mpg.data"
-    cols = ["mpg", "cyl", "disp", "hp", "weight", "acc", "year", "origin", "car"]
-    df = pd.read_csv(url, delim_whitespace=True, names=cols, na_values="?")
-    df = df.dropna()
-
-    X = df[["disp"]]
-    y = df["mpg"]
-
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
-
-    poly = PolynomialFeatures(degree=2)
-    X_train_poly = poly.fit_transform(X_train)
-    X_test_poly = poly.transform(X_test)
-
-    model = LinearRegression()
-    model.fit(X_train_poly, y_train)
-    y_pred = model.predict(X_test_poly)
-
-    plt.scatter(X_test, y_test, color='blue', label='Actual', alpha=0.5)
-    plt.scatter(X_test, y_pred, color='red', label='Predicted', alpha=0.5)
-    plt.title("Polynomial Regression - Auto MPG")
-    plt.xlabel("Displacement")
-    plt.ylabel("MPG")
-    plt.legend()
-    plt.grid(True)
-    plt.show()
-
-# ----- Run both -----
-linear_regression()
-polynomial_regression()
-
-8.
-
-import numpy as np
-from sklearn.datasets import load_breast_cancer
-from sklearn.model_selection import train_test_split
-from sklearn.tree import DecisionTreeClassifier, export_text
-
-# Load the breast cancer dataset (already included with sklearn, no internet needed)
-data = load_breast_cancer()
-X = data.data
-y = data.target
-
-# Split the dataset into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-# Create and train the decision tree classifier
-model = DecisionTreeClassifier(max_depth=4, random_state=42)
-model.fit(X_train, y_train)
-
-# Check model accuracy on test data
-accuracy = model.score(X_test, y_test)
-print(f"Model Accuracy: {accuracy:.2f}")
-
-# Print the decision tree rules
-rules = export_text(model, feature_names=list(data.feature_names))
-print("\nDecision Tree Rules:\n", rules)
-
-# Classify a new sample from the test set
-new_sample = X_test[0].reshape(1, -1)
-prediction = model.predict(new_sample)
-
-print("\nPredicted Class for the New Sample:", "Malignant" if prediction[0] == 0 else "Benign")
-
-
-9.
-
-import matplotlib.pyplot as plt
-from sklearn.datasets import fetch_olivetti_faces
-from sklearn.model_selection import train_test_split, cross_val_score
-from sklearn.naive_bayes import GaussianNB
-from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
-
-# Load dataset
-data = fetch_olivetti_faces(shuffle=True, random_state=42)
-X, y = data.data, data.target
-
-# Split dataset
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
-
-# Train model
-model = GaussianNB()
-model.fit(X_train, y_train)
-
-# Predict test labels
-y_pred = model.predict(X_test)
-
-# Print accuracy
-print(f"Accuracy: {accuracy_score(y_test, y_pred) * 100:.2f}%")
-
-# Print classification report and confusion matrix
-print("\nClassification Report:")
-print(classification_report(y_test, y_pred, zero_division=1))
-
-print("\nConfusion Matrix:")
-print(confusion_matrix(y_test, y_pred))
-
-# Cross-validation accuracy
-cv_scores = cross_val_score(model, X, y, cv=5)
-print(f"\nCross-validation Accuracy: {cv_scores.mean() * 100:.2f}%")
-
-# Visualize some predictions
-fig, axes = plt.subplots(3, 5, figsize=(12, 8))
-for ax, img, true_lbl, pred_lbl in zip(axes.ravel(), X_test, y_test, y_pred):
-    ax.imshow(img.reshape(64, 64), cmap='gray')
-    ax.set_title(f"True: {true_lbl}\nPred: {pred_lbl}")
-    ax.axis('off')
-
-plt.tight_layout()
-plt.show()
-
-
-10.
-
-import matplotlib.pyplot as plt
-import seaborn as sns
-from sklearn.datasets import load_breast_cancer
-from sklearn.cluster import KMeans
-from sklearn.preprocessing import StandardScaler
-from sklearn.decomposition import PCA
-from sklearn.metrics import confusion_matrix, classification_report
-
-# Load and scale data
-data = load_breast_cancer()
-X_scaled = StandardScaler().fit_transform(data.data)
-y = data.target
-
-# K-Means clustering
-kmeans = KMeans(n_clusters=2, random_state=42, n_init=10)
-clusters = kmeans.fit_predict(X_scaled)
-
-# Print evaluation metrics
-print("Confusion Matrix:\n", confusion_matrix(y, clusters))
-print("\nClassification Report:\n", classification_report(y, clusters))
-
-# PCA to reduce data to 2D for plotting
-X_pca = PCA(n_components=2).fit_transform(X_scaled)
-
-# Plot clusters
-plt.figure(figsize=(8, 6))
-sns.scatterplot(x=X_pca[:, 0], y=X_pca[:, 1], hue=clusters, palette='Set1', s=100, edgecolor='k', alpha=0.7)
-plt.title("K-Means Clusters")
-plt.show()
-
-# Plot true labels
-plt.figure(figsize=(8, 6))
-sns.scatterplot(x=X_pca[:, 0], y=X_pca[:, 1], hue=y, palette='coolwarm', s=100, edgecolor='k', alpha=0.7)
-plt.title("True Labels")
-plt.show()
-
-# Plot clusters with centroids
-plt.figure(figsize=(8, 6))
-sns.scatterplot(x=X_pca[:, 0], y=X_pca[:, 1], hue=clusters, palette='Set1', s=100, edgecolor='k', alpha=0.7)
-centers = PCA(n_components=2).fit_transform(kmeans.cluster_centers_)
-plt.scatter(centers[:, 0], centers[:, 1], c='red', s=200, marker='X', label='Centroids')
-plt.title("Clusters with Centroids")
-plt.legend()
-plt.show()
+PC LAB PROGRAMS
+1)
+#include <stdio.h>
+#include<omp.h>
+int main(){
+int n;
+printf("enter number of iterations:");
+scanf("%d",&n);
+omp_set_num_threads(4);
+#pragma omp parallel for schedule(static,2)
+for(int i=0;i<n;i++){
+int tid=omp_get_thread_num();
+printf("Thread %d is executing iteration %d\n",tid,i);
+}
+return 0;
+}
+
+2)
+#include<stdio.h>
+#include<omp.h>
+#include<stdlib.h>
+
+#define N 100000
+
+void merge(int *a, int l, int m, int r) {
+	int n1 = m - l + 1, n2 = r - m, i, j, k;
+	int *L = malloc(n1 * sizeof(int));
+	int *R = malloc(n2 * sizeof(int));
+	for(i = 0; i < n1; i++) L[i] = a[l + i];
+	for(j = 0; j < n2; j++) R[j] = a[m + 1 + j];
+	i = j = 0;
+	k = l;
+	while(i < n1 && j < n2) {
+		a[k++] = (L[i] < R[j]) ? L[i++] : R[j++];
+	}
+	while(i < n1)a[k++] = L[i++];
+	while(j < n2)a[k++] = R[j++];
+	free(L);
+	free(R);
+}
+
+void sort(int *a, int l, int r, int d) {
+	if(l>=r) return;
+	int m = ( l + r ) / 2;
+	if(d > 0) {
+	#pragma omp parallel sections
+	{
+		#pragma omp section
+		{
+			printf("Thread %d working on left [%d..%d]\n", omp_get_thread_num(), l, m);
+			sort(a, l, m, d-1);
+		}
+		#pragma omp section
+		{
+			printf("Thread %d working on right [%d..%d]\n", omp_get_thread_num(),m + 1, r);
+			sort(a, m + 1, r, d-1);
+		}
+	}
+	} else {
+		sort(a, l, m, 0);
+		sort(a, m + 1, r, 0);
+	}
+	merge(a, l, m, r);
+}
+
+int main() {
+	omp_set_nested(1);
+	int *a = malloc(N * sizeof(int));
+	int *b = malloc(N * sizeof(int));	
+	for(int i = 0; i < N; i++)a[i] = b[i] = rand();
+	double t = omp_get_wtime();
+	sort(a, 0, N -1, 0);
+	printf("Seq: %f seconds\n",omp_get_wtime() - t);
+	t = omp_get_wtime(); 
+	sort(b, 0, N -1, 2);
+	printf("Par: %f seconds\n",omp_get_wtime() - t);
+	free(a);
+	free(b);
+	return 0;
+}
+3)
+#include<stdio.h>
+#include<omp.h>
+
+//recursive fibonnaci with open mp tasks and labeled thread diagonistics
+int fib(int n,const char*label){
+int tid=omp_get_thread_num();
+printf("thread %d handling %s call:fib(%d)\n",tid,label,n);
+
+if(n<2) return n;
+
+int x,y;
+
+#pragma omp task shared(x)
+{
+x=fib(n-1,"left");
+}
+
+#pragma omp task shared(y)
+{
+y=fib(n-2,"right");
+}
+
+#pragma omp taskwait
+return x+y;
+}
+
+int main(){
+int n;
+printf("enter number of fibonacci terms:");
+scanf("%d",&n);
+
+omp_set_nested(1);//enable nested parallelism
+omp_set_num_threads(4);//set thread count
+
+double start=omp_get_wtime();
+#pragma omp parallel
+{
+#pragma omp single
+{
+for (int i=0;i<n;i++){
+printf("\n\n fib(%d)=???\n",i);
+int result=fib(i,"root");
+printf("fib(%d)=%d\n",i,result);
+}
+}
+}
+double end=omp_get_wtime();
+printf("execution time:%f seconds \n",end - start);
+return 0;
+}
+4)
+#include <stdio.h>
+#include <stdlib.h>
+#include <omp.h>
+
+int is_prime(int x) {
+    if (x < 2) return 0;
+    for (int d = 2; d * d <= x; d++)
+        if (x % d == 0) return 0;
+    return 1;
+}
+
+int main(int argc, char *argv[]) {
+    if (argc != 3) {
+        printf("Usage: %s <n> <threads>\n", argv[0]);
+        return 1;
+    }
+    int n = atoi(argv[1]);
+    int threads = atoi(argv[2]);
+    omp_set_num_threads(threads);
+    int count;
+    double t0, t1;
+    // Serial
+    count = 0;
+    t0 = omp_get_wtime();
+    printf("Serial primes up to %d:\n", n);
+    for (int i = 1; i <= n; i++) {
+        if (is_prime(i)) {
+            printf("%d ", i);
+            count++;
+        }
+    }
+    t1 = omp_get_wtime();
+    printf("\nSerial: %d primes, %f sec\n", count, t1 - t0);
+    // Parallel
+    count = 0;
+    int *primes = malloc((n + 1) * sizeof(int));
+    t0 = omp_get_wtime();
+    #pragma omp parallel for
+    for (int i = 1; i <= n; i++) {
+        if (is_prime(i)) {
+            #pragma omp critical
+            {
+                primes[count] = i;
+                count++;
+            }
+        }
+    }
+    t1 = omp_get_wtime();
+    printf("Parallel(%d) primes up to %d:\n", threads, n);
+    for (int i = 0; i < count; i++)
+        printf("%d ", primes[i]);
+    printf("\nParallel: %d primes, %f sec\n", count, t1 - t0);
+    free(primes);
+    return 0;
+}
+5)
+#include <mpi.h>
+#include <stdio.h>
+
+int main(int argc, char *argv[]) {
+    // 1. Initialize the MPI environment. This must be the first MPI call.
+    // The arguments (&argc, &argv) are required for MPI setup.
+    MPI_Init(&argc, &argv);
+    int rank;
+    // 2. Get the rank (ID) of the current process within the communicator
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank); 
+    if (rank == 0) {
+        // Code for Process 0 (The Sender)
+        int number = 42;
+        // MPI_Send(data_address, count, datatype, destination_rank, tag, communicator)
+        MPI_Send(&number, 1, MPI_INT, 1, 0, MPI_COMM_WORLD); 
+        printf("Rank 0 sent number %d to Rank 1\n", number);
+    } 
+    else if (rank == 1) {
+        // Code for Process 1 (The Receiver)
+        int received;
+        // MPI_Recv(buffer_address, count, datatype, source_rank, tag, communicator, status)
+        MPI_Recv(&received, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE); 
+        printf("Rank 1 received number %d from Rank 0\n", received);
+    }
+    // 3. Finalize the MPI environment. This must be the last MPI call.
+    MPI_Finalize();
+    return 0;
+}
+7)
+#include <stdio.h>
+#include <mpi.h>
+int main(){
+int my_rank,comm_sz;
+int data;
+MPI_Init(NULL,NULL);
+MPI_Comm_rank(MPI_COMM_WORLD,&my_rank);
+MPI_Comm_size(MPI_COMM_WORLD,&comm_sz);
+
+if(my_rank ==0){
+printf("enter  the number to be broadcasted\n");  
+scanf ("%d",&data);
+printf("process 0 broadcasting data=%d\n",data);
+}
+MPI_Bcast(&data,1,MPI_INT,0,MPI_COMM_WORLD);
+printf("process %d received data= %d\n",my_rank,data);
+MPI_Finalize();
+return 0;
+}
+8)
+#include <stdio.h>
+#include <mpi.h>
+
+int main(int argc, char* argv[]) {
+    int rank, size;
+    int send_data[8];
+    int recv_data;
+    int gathered_data[8];
+    MPI_Init(&argc, &argv);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+    if (rank == 0) {
+        printf("Root process initializing data:\n");
+        for (int i = 0; i < size; i++) {
+            send_data[i] = i + 1;
+            printf("%d ", send_data[i]);
+        }
+        printf("\n");
+    }
+    // Scatter one element to each process
+    MPI_Scatter(send_data, 1, MPI_INT, &recv_data, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    printf("Process %d received %d\n", rank, recv_data);
+    // Each process doubles its received value
+    recv_data = recv_data * 2;
+    // Gather back the results to root
+    MPI_Gather(&recv_data, 1, MPI_INT, gathered_data, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    if (rank == 0) {
+        printf("\nData gathered at root after completion:\n");
+        for (int i = 0; i < size; i++) {
+            printf("%d ", gathered_data[i]);
+        }
+        printf("\n");
+    }
+    MPI_Finalize();
+    return 0;
+}
+9)
+#include <mpi.h>
+#include <stdio.h>
+
+int main(int argc, char* argv[]) {
+    int rank, size;
+    int value;
+    int sum, prod, max, min;
+    int all_sum, all_prod, all_max, all_min;
+    MPI_Init(&argc, &argv);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+    // Each process sets its value
+    value = rank + 1;  // Example: Process 0 → 1, Process 1 → 2, etc.
+    printf("Process %d has value %d\n", rank, value);
+    // ---------- MPI_Reduce (results only at root process) ----------
+    MPI_Reduce(&value, &sum, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+    MPI_Reduce(&value, &prod, 1, MPI_INT, MPI_PROD, 0, MPI_COMM_WORLD);
+    MPI_Reduce(&value, &max, 1, MPI_INT, MPI_MAX, 0, MPI_COMM_WORLD);
+    MPI_Reduce(&value, &min, 1, MPI_INT, MPI_MIN, 0, MPI_COMM_WORLD);
+    if (rank == 0) {
+        printf("\n--- Results using MPI_Reduce (available only at root) ---\n");
+        printf("Sum = %d\n", sum);
+        printf("Product = %d\n", prod);
+        printf("Maximum = %d\n", max);
+        printf("Minimum = %d\n", min);
+    }
+    // ---------- MPI_Allreduce (results available on ALL processes) ----------
+    MPI_Allreduce(&value, &all_sum, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+    MPI_Allreduce(&value, &all_prod, 1, MPI_INT, MPI_PROD, MPI_COMM_WORLD);
+    MPI_Allreduce(&value, &all_max, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+    MPI_Allreduce(&value, &all_min, 1, MPI_INT, MPI_MIN, MPI_COMM_WORLD);
+    printf("\nProcess %d after MPI_Allreduce:\n", rank);
+    printf("  Sum = %d, Product = %d, Max = %d, Min = %d\n",all_sum, all_prod, all_max, all_min);
+    MPI_Finalize();
+    return 0;
+}
+10)
+#include <stdio.h>
+#include <mpi.h>
+
+#define SIZE 100000
+
+int main(int argc, char *argv[])
+{
+    int rank, comm_sz;
+    MPI_Init(&argc, &argv);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    int data_send[SIZE], data_recv[SIZE];
+    for (int i = 0; i < SIZE; i++)
+    {
+        data_send[i] = rank;
+        data_recv[i] = -1;
+    }
+    if (rank == 0)
+    {
+        printf("Process 0 sending first\n");
+        MPI_Send(data_send, SIZE, MPI_INT, 1, 0, MPI_COMM_WORLD);
+        MPI_Recv(data_recv, SIZE, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    }
+    else if (rank == 1)
+    {
+        printf("Process 1 receiving first\n");
+        MPI_Send(data_send, SIZE, MPI_INT, 0, 0, MPI_COMM_WORLD);
+        MPI_Recv(data_recv, SIZE, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    }
+    printf("Process %d received first element: %d\n", rank, data_recv[0]);
+    MPI_Finalize();
+    return 0;
+}
+b)
+#include<stdio.h>
+#include<mpi.h>
+
+#define SIZE 100000
+
+int main(int argc, char *argv[]){
+	int rank, comm_sz;
+	MPI_Init(&argc, &argv);
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+	MPI_Comm_size(MPI_COMM_WORLD, &comm_sz);
+	int data_send[SIZE], data_recv[SIZE];
+	for(int i = 0; i < SIZE; i++){
+		data_send[i] = rank;
+		data_recv[i] = -1;
+	}
+	if(rank == 0){
+		printf("Process 0 sending first\n");
+		MPI_Send(data_send, SIZE, MPI_INT, 1, 0, MPI_COMM_WORLD);
+		MPI_Recv(data_recv, SIZE, MPI_INT, 1, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+	}
+	else if(rank == 1){
+		MPI_Recv(data_recv, SIZE, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+		printf("Process 1 sending first\n");
+		MPI_Send(data_send, SIZE, MPI_INT, 0, 0, MPI_COMM_WORLD);
+	}
+	printf("Process %d received first element %d\n", rank, data_recv[0]);
+	MPI_Finalize();
+	return 0;
+}
+
+
+1	gcc program1_static_schedule.c -fopenmp -o p1	./p1
+2	gcc program2_mergesort.c -fopenmp -o p2	./p2
+3	gcc program3_fibonacci_tasks.c -fopenmp -o p3	./p3
+4	gcc program4_primes.c -fopenmp -o p4	./p4
+5	mpicc program5_sendrecv.c -o p5	mpirun -np 2 ./p5
+6	mpicc program6_deadlock_fixed.c -o p6	mpirun -np 2 ./p6
+7	mpicc program7_bcast.c -o p7	mpirun -np 4 ./p7
+8	mpicc program8_scatter_gather.c -o p8	mpirun -np 4 ./p8
+9	mpicc program9_reduce_allreduce.c -o p9	mpirun -np 4 ./p9
