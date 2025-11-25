@@ -435,7 +435,106 @@ You write:
 
 Predictive analytics helps to understand future customer buying patterns
 
-Business can personalize offers, optimize pricing
+bida lab manual
 
-This completes Program 4.
+2 and 3
+
+• Tableau is a leading BI tool used for transforming raw data into meaningful insights. 
+• This report demonstrates revenue analysis, correlation analysis, and category/gender 
+insights using Tableau. 
+• Each section includes step-by-step instructions and visuals. 
+• Percentage calculations are added where applicable, and drill up/down is explained in 
+context. 
+• The final dashboard summarizes all visual insights for stakeholders. 
+Visual 1: Revenue by Month 
+• Drag 'Month' to Columns. 
+• Drag 'Revenue' to Rows. 
+• Select 'Line Chart' to visualize revenue trend. 
+• Add markers for better visibility. 
+• Use 'Show Percent of Total' if needed to see monthly contribution percentage. 
+• Format title and labels. 
+Visual 2: Revenue by Age 
+• Drag 'Age' to X-axis. 
+• Drag 'Revenue' to Y-axis. 
+• Select 'Bar Chart' for age-wise revenue distribution. 
+• Add data labels and format. 
+• Optionally, use 'Show Percent of Total' for age group contribution. 
+Visual 3: Revenue per Category per Gender 
+• Drag 'Category' to Y-axis. 
+• Drag 'Revenue' to X-axis. 
+• Split by 'Gender' using dual-axis or mirrored bars. 
+• Use colors to differentiate Male vs Female. 
+• Format labels and add data values. 
+• Percentage can be shown as contribution per category.
+Visual 4: Percentage of Revenue per Region 
+• Drag 'Region' to Legend. 
+• Drag 'Revenue' to Values. 
+• Enable data labels to show percentage contribution. 
+• Format colors and chart title. 
+Visual 5: Quality vs Discount Correlation 
+• Drag 'Discount' to X-axis. 
+• Drag 'Quality' to Y-axis. 
+• Select 'Scatter Plot' for correlation analysis. 
+• Add trend line to identify relationship. 
+• Observe outliers for unusual patterns. 
+• Percentage can be added for discount contribution if needed.
+
+
+
+4. Enhancing customer experience with predictive analytics and data mining by 
+taking suitable business scenario (Use Weka/RapidMiner/Spark/R/Microsoft 
+power BI). 
+Introduction to Power BI 
+• Power BI is a Microsoft business intelligence platform for data visualization and analytics. 
+• Converts raw datasets into interactive dashboards and actionable insights. 
+• Supports multiple data sources: Excel, CSV, SQL, APIs, cloud storage. 
+• Users can filter, drill-down, and highlight data interactively. 
+• Helps organizations make faster and accurate decisions through visual analytics. 
+Core Concepts & Features 
+• Data Connection – Connects to files, databases, web sources, online services. 
+• Data Preparation – Clean, shape, and transform data using Power Query.
+• Data Modeling – Create relationships, hierarchies, and calculations. 
+• Visual Analytics – Build interactive dashboards with charts, slicers, and maps. 
+• AI Features – Analyze tool explains trends and outliers. 
+Visual Demonstrations 
+Column Chart – Total Boxes Shipped by Country 
+• Insert Column Chart visual. 
+• Drag Country to Axis. 
+• Drag Boxes Shipped to Values. 
+• Power BI auto-aggregates totals. 
+• Customize colors, title, and labels (e.g., bright blue). 
+• Resize and position on canvas. 
+• Apply data labels to show exact totals. 
+Bar Chart – Boxes Shipped by Product 
+• Insert Bar Chart visual. 
+• Drag Product to Axis. 
+• Drag Boxes Shipped to Values. 
+• Switch to horizontal bars for long product names. 
+• Format bar colors (e.g., orange gradient) and labels. 
+• Apply data labels. 
+• Resize chart neatly. 
+Line Chart – Sales Trend Over Time 
+• Insert Line Chart visual. 
+• Drag Date to Axis (auto hierarchy applied). 
+• Drag Amount to Values. 
+• Enable drill-down by month/day. 
+• Format line color (e.g., green), markers, and gridlines.
+• Add axis labels and chart title. 
+• Enable tooltips to show exact values. 
+Step 8: Pie Chart – Shipment Share by Country 
+• Insert Pie Chart visual. 
+• Drag Country to Legend. 
+• Drag Boxes Shipped to Values. 
+• Adjust slice colors (e.g., blue, orange, green, red). 
+• Enable data labels for percentages. 
+• Resize chart and place clearly on canvas. 
+• Add descriptive title and legend. 
+Step 9: Scatter Plot – Boxes Shipped vs Sales Amount 
+• Insert Scatter Chart visual. 
+• Drag Boxes Shipped to X-axis. 
+• Drag Amount to Y-axis. 
+• Optionally, add Country to Legend for color coding. 
+• Enable tooltips to display details on hover. 
+• Format marker size and colors (e.g., purple). 
+• Analyze correlations and patterns.
     
